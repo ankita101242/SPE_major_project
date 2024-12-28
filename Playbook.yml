@@ -1,0 +1,31 @@
+---
+- name: Deploy Docker Compose stack
+  hosts: localhost
+  remote_user: ankita
+  become: false
+
+  tasks:
+    - name: Install Docker Compose
+      apt:
+        name: docker-compose
+        state: present
+
+    - name: Pull Backend Image
+      docker_image:
+        name: ankitaagrawal12/prosepetals-backend
+        source: pull
+
+    - name: Pull Frontend Image
+      docker_image:
+        name: ankitaagrawal12/prosepetals-frontend
+        source: pull
+
+    - name: Copy Docker Compose file to host
+      copy:
+        src: /var/lib/jenkins/workspace/SPE_major_project/docker-compose.yml
+        dest: ./docker-compose.yml
+
+    - name: Start Docker Compose stack
+      command: docker-compose up -d
+      args:
+        chdir: ./

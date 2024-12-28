@@ -1,0 +1,45 @@
+version: '3.9'
+networks:
+  prosepetals-network:
+volumes:
+  database-volume:
+  logs:
+services:
+  mydb:
+    image: mysql:latest
+    healthcheck:
+      test: [ "CMD","ls" ]
+    container_name: database-container-pp
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pp_db
+    volumes:
+      - database-volume:/var/lib/mysql
+    networks:
+      - prosepetals-network
+  prosepetals-backend:
+    image: ankitaagrawal12/prosepetals-backend
+    container_name: prosepetals-backend
+    ports:
+      - "9595:9595"
+    environment:
+      MYSQL_URL: jdbc:mysql://mydb:3306/pp_db?createDatabaseIfNotExist=true
+      MYSQL_USERNAME: root
+      MYSQL_PASSWORD: root
+    volumes:
+      - logs:/logs
+    networks:
+      - prosepetals-network
+    depends_on:
+      mydb:
+        condition: service_healthy
+  prosepetals-frontend:
+    image: ankitaagrawal12/prosepetals-frontend
+    container_name: prosepetals-frontend
+    stdin_open: true
+    ports:
+      - "3000:3000"
+    networks:
+      - prosepetals-network
+    depends_on:
+      - prosepetals-backend
